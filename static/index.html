@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bengaluru House Price AI | Dual-Model Real Estate Valuation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏢</text></svg>">
+</head>
+<body>
+  <!-- Background Glow & Grid -->
+  <div class="bg-mesh"></div>
+  <div class="bg-grid"></div>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="container header-container">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" width="26" height="26" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">Bengaluru <span class="gradient-text">HousePrice AI</span></h1>
+          <p class="brand-sub">Dual-Engine ML Valuation &middot; Exact Price & Tier Prediction</p>
+        </div>
+      </div>
+      <div class="header-badges">
+        <div class="badge status-badge" id="apiStatusBadge">
+          <span class="status-dot"></span>
+          <span id="apiStatusText">Connecting...</span>
+        </div>
+        <button class="btn btn-outline btn-sm" id="btnModelInfo" type="button">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          Model Architecture
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container main-content">
+    
+    <!-- Preset quick picks -->
+    <section class="presets-section">
+      <span class="presets-label">
+        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+        </svg>
+        Try Sample Properties:
+      </span>
+      <div class="presets-pills" id="presetsContainer">
+        <!-- Dynamically injected -->
+      </div>
+    </section>
+
+    <!-- Main Grid -->
+    <div class="calculator-grid">
+      
+      <!-- Input Panel -->
+      <section class="card form-card">
+        <div class="card-header">
+          <h2 class="card-title">Property Specifications</h2>
+          <p class="card-desc">Enter the details of the Bengaluru home to calculate market valuation.</p>
+        </div>
+
+        <form id="predictionForm" autocomplete="off">
+          
+          <!-- Location Field -->
+          <div class="form-group">
+            <div class="label-row">
+              <label for="locationInput">Locality / Neighborhood <span class="req">*</span></label>
+              <span class="hint-badge" id="locCountBadge">241 Localities</span>
+            </div>
+            <div class="combobox-wrapper">
+              <span class="input-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+              </span>
+              <input 
+                type="text" 
+                id="locationInput" 
+                class="form-control with-icon" 
+                placeholder="Search location (e.g. Whitefield, Indiranagar, Electronic City)..." 
+                required 
+              />
+              <button type="button" class="btn-clear-loc" id="btnClearLoc" title="Clear location">&times;</button>
+              <div class="autocomplete-dropdown hidden" id="autocompleteDropdown"></div>
+            </div>
+            <div class="quick-locs" id="quickLocs">
+              <span class="quick-title">Popular:</span>
+              <button type="button" class="loc-chip" data-loc="Whitefield">Whitefield</button>
+              <button type="button" class="loc-chip" data-loc="Electronic City Phase II">Electronic City</button>
+              <button type="button" class="loc-chip" data-loc="Indira Nagar">Indiranagar</button>
+              <button type="button" class="loc-chip" data-loc="HSR Layout">HSR Layout</button>
+              <button type="button" class="loc-chip" data-loc="Koramangala">Koramangala</button>
+              <button type="button" class="loc-chip" data-loc="Rajaji Nagar">Rajaji Nagar</button>
+            </div>
+          </div>
+
+          <!-- Area Type Field -->
+          <div class="form-group">
+            <label>Area Type Specification <span class="req">*</span></label>
+            <div class="segmented-control" id="areaTypeContainer">
+              <!-- Dynamically populated or static fallbacks -->
+              <label class="seg-item active">
+                <input type="radio" name="area_type" value="Super built-up  Area" checked>
+                <span class="seg-label">Super Built-up Area</span>
+              </label>
+              <label class="seg-item">
+                <input type="radio" name="area_type" value="Built-up  Area">
+                <span class="seg-label">Built-up Area</span>
+              </label>
+              <label class="seg-item">
+                <input type="radio" name="area_type" value="Plot  Area">
+                <span class="seg-label">Plot Area</span>
+              </label>
+              <label class="seg-item">
+                <input type="radio" name="area_type" value="Carpet  Area">
+                <span class="seg-label">Carpet Area</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Total Sqft Field -->
+          <div class="form-group">
+            <div class="label-row">
+              <label for="totalSqft">Total Built-Up Area (Sq. Ft.) <span class="req">*</span></label>
+              <span class="value-display" id="sqftDisplay">1,200 sq.ft</span>
+            </div>
+            <div class="input-with-steppers">
+              <input 
+                type="number" 
+                id="totalSqft" 
+                class="form-control" 
+                min="300" 
+                max="20000" 
+                step="25" 
+                value="1200" 
+                required 
+              />
+              <div class="quick-adjust-group">
+                <button type="button" class="btn-adjust" data-step="-100">-100</button>
+                <button type="button" class="btn-adjust" data-step="+100">+100</button>
+                <button type="button" class="btn-adjust" data-step="+500">+500</button>
+              </div>
+            </div>
+            <input 
+              type="range" 
+              id="sqftSlider" 
+              class="range-slider" 
+              min="300" 
+              max="5000" 
+              step="50" 
+              value="1200" 
+            />
+            <div class="slider-ticks">
+              <span>300 sq.ft</span>
+              <span>1,500 sq.ft</span>
+              <span>3,000 sq.ft</span>
+              <span>5,000+ sq.ft</span>
+            </div>
+          </div>
+
+          <!-- BHK & Bathrooms Row -->
+          <div class="form-row-2col">
+            
+            <!-- Bedrooms (BHK) -->
+            <div class="form-group">
+              <label>Bedrooms (BHK) <span class="req">*</span></label>
+              <div class="pill-group" id="bhkGroup">
+                <button type="button" class="pill-btn" data-val="1">1</button>
+                <button type="button" class="pill-btn active" data-val="2">2</button>
+                <button type="button" class="pill-btn" data-val="3">3</button>
+                <button type="button" class="pill-btn" data-val="4">4</button>
+                <button type="button" class="pill-btn" data-val="5">5+</button>
+              </div>
+              <input type="hidden" id="bhkInput" value="2" />
+            </div>
+
+            <!-- Bathrooms -->
+            <div class="form-group">
+              <label>Bathrooms <span class="req">*</span></label>
+              <div class="pill-group" id="bathGroup">
+                <button type="button" class="pill-btn" data-val="1">1</button>
+                <button type="button" class="pill-btn active" data-val="2">2</button>
+                <button type="button" class="pill-btn" data-val="3">3</button>
+                <button type="button" class="pill-btn" data-val="4">4</button>
+                <button type="button" class="pill-btn" data-val="5">5+</button>
+              </div>
+              <input type="hidden" id="bathInput" value="2" />
+            </div>
+
+          </div>
+
+          <!-- Submit Button -->
+          <div class="form-action">
+            <button type="submit" class="btn btn-primary btn-block btn-lg" id="btnSubmit">
+              <span class="btn-text">
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none">
+                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+                </svg>
+                Calculate Valuation
+              </span>
+              <span class="btn-loader hidden">
+                <span class="spinner"></span> Predicting with Random Forest...
+              </span>
+            </button>
+            <p class="submit-hint">Press <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to calculate immediately</p>
+          </div>
+
+        </form>
+      </section>
+
+      <!-- Output / Results Panel -->
+      <section class="results-column">
+        
+        <!-- Welcome state placeholder -->
+        <div class="card result-card empty-state" id="emptyState">
+          <div class="empty-icon">📊</div>
+          <h3>Ready for Valuation</h3>
+          <p>Fill out the property specifications or pick one of the sample presets to run the ML regression and classification pipelines.</p>
+        </div>
+
+        <!-- Active Result Card (Hidden until prediction) -->
+        <div class="results-wrapper hidden" id="resultsContent">
+          
+          <!-- Regression Valuation Result Card -->
+          <div class="card result-card valuation-card">
+            <div class="card-top-tag">
+              <span class="tag-reg">REGRESSION MODEL &middot; EXACT ESTIMATE</span>
+              <span class="tag-r2">R² 0.761 (Log-Scaled RF)</span>
+            </div>
+
+            <div class="price-header">
+              <div class="price-main">
+                <span class="currency-symbol">₹</span>
+                <span class="price-number" id="predictedPriceNumber">--</span>
+                <span class="price-unit" id="predictedPriceUnit">Lakhs</span>
+              </div>
+              <div class="price-formatted" id="formattedInrDisplay">₹ 0.00 Lakh</div>
+            </div>
+
+            <div class="metrics-strip">
+              <div class="metric-item">
+                <span class="metric-label">Rate / Sq.Ft</span>
+                <span class="metric-val" id="pricePerSqftDisplay">₹ 0 / sq.ft</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">Room Density</span>
+                <span class="metric-val" id="roomDensityDisplay">0 sq.ft / BHK</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">Bath / Bed Ratio</span>
+                <span class="metric-val" id="bathBedRatioDisplay">1.0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Classification Tier Card -->
+          <div class="card result-card tier-card" id="tierCard">
+            <div class="card-top-tag">
+              <span class="tag-cls">CLASSIFICATION MODEL &middot; PRICE TIER</span>
+              <span class="tag-f1">F1 Macro 0.77</span>
+            </div>
+
+            <div class="tier-badge-container">
+              <div class="tier-indicator" id="tierBadge">MEDIUM</div>
+              <div class="tier-description" id="tierDesc">Mid-Market Tier Range</div>
+            </div>
+
+            <!-- Probability breakdown bars -->
+            <div class="tier-bars-section">
+              <div class="section-subtitle">Random Forest Confidence Distribution</div>
+
+              <div class="prob-row" id="rowLow">
+                <div class="prob-labels">
+                  <span class="class-title">Low Tier (&le; 55 Lakhs)</span>
+                  <span class="class-val" id="probLow">0%</span>
+                </div>
+                <div class="prob-track">
+                  <div class="prob-fill fill-low" id="barLow" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <div class="prob-row" id="rowMedium">
+                <div class="prob-labels">
+                  <span class="class-title">Medium Tier (55 &ndash; 93 Lakhs)</span>
+                  <span class="class-val" id="probMedium">0%</span>
+                </div>
+                <div class="prob-track">
+                  <div class="prob-fill fill-med" id="barMedium" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <div class="prob-row" id="rowHigh">
+                <div class="prob-labels">
+                  <span class="class-title">High Tier (&gt; 93 Lakhs)</span>
+                  <span class="class-val" id="probHigh">0%</span>
+                </div>
+                <div class="prob-track">
+                  <div class="prob-fill fill-high" id="barHigh" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tier Boundary Gauge -->
+            <div class="boundary-guide">
+              <div class="guide-labels">
+                <span>0L</span>
+                <span class="mark">55L (Low)</span>
+                <span class="mark">93L (Med)</span>
+                <span>Premium (High)</span>
+              </div>
+              <div class="guide-track">
+                <div class="guide-marker" id="priceMarker" style="left: 50%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Validation & Outlier Advisory Notice (Dynamic) -->
+          <div class="alert-box hidden" id="advisoryAlert">
+            <div class="alert-icon">⚠️</div>
+            <div class="alert-content">
+              <h4 class="alert-title">Dataset Rule & Outlier Advisory</h4>
+              <ul class="alert-list" id="advisoryList">
+                <!-- Dynamically injected -->
+              </ul>
+            </div>
+          </div>
+
+          <!-- Feature Drivers Summary Card -->
+          <div class="card result-card insights-card">
+            <h3 class="insights-title">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+              Key Drivers for this Evaluation
+            </h3>
+            <p class="insights-text">
+              The regression pipeline evaluated <strong>total_sqft</strong> as the highest-weight feature, coupled with 
+              <span id="evaluatedLocationSpan" class="highlight-text">Whitefield</span>'s historical premium and 
+              <span id="evaluatedAreaTypeSpan" class="highlight-text">Super built-up Area</span> coefficient.
+            </p>
+          </div>
+
+        </div>
+
+      </section>
+    </div>
+
+  </main>
+
+  <!-- Model Architecture Modal -->
+  <div class="modal-backdrop hidden" id="modelModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">ML Pipeline & Dataset Architecture</h3>
+        <button type="button" class="modal-close" id="btnCloseModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-section">
+          <h4>Dataset & Cleaning Pipeline</h4>
+          <p>
+            Trained on <strong>13,320 records</strong> of Bengaluru real estate properties. Cleaned missing values, converted sqft ranges to averages, consolidated 1,287 rare locations into 241 standardized locality clusters (frequency &gt; 10), and purged extreme 1% outliers.
+          </p>
+        </div>
+        <div class="modal-grid-2">
+          <div class="modal-box">
+            <div class="box-badge">Regression Engine</div>
+            <h5>Random Forest Regressor (200 trees)</h5>
+            <ul>
+              <li><strong>R² Score:</strong> 0.761</li>
+              <li><strong>Target:</strong> Transformed log(Price) with expm1 inverse</li>
+              <li><strong>Preprocessing:</strong> OneHotEncoder for 241 locations & 4 area types</li>
+            </ul>
+          </div>
+          <div class="modal-box">
+            <div class="box-badge">Classification Engine</div>
+            <h5>Random Forest Classifier (200 trees)</h5>
+            <ul>
+              <li><strong>F1 Macro:</strong> 0.7697 (Accuracy: 76.84%)</li>
+              <li><strong>Tiers:</strong> Low (&le; 55L), Medium (55-93L), High (&gt; 93L)</li>
+              <li>Calculated from training terciles avoiding data leakage</li>
+            </ul>
+          </div>
+        </div>
+        <div class="modal-section">
+          <h4>Key Outlier Rules Applied</h4>
+          <ul class="rule-list">
+            <li>Minimum Room Size: At least 300 sq.ft per BHK</li>
+            <li>Bathroom Sanity: Bathrooms cannot exceed BHK count by more than 2</li>
+            <li>Price Per Sq.Ft: Truncated extreme 1st and 99th percentiles</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="app-footer">
+    <div class="container footer-container">
+      <p>Bengaluru Real Estate Machine Learning System &middot; Powered by FastAPI & Scikit-Learn</p>
+      <div class="footer-links">
+        <span class="pill-stat">241 Localities</span>
+        <span class="pill-stat">Dual Random Forest</span>
+        <span class="pill-stat">FastAPI REST</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
